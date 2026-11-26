@@ -23,6 +23,7 @@ function Set-DerechoUsuario {
     <# Agrega una cuenta a un derecho de usuario de la directiva local (secedit). #>
     param([Parameter(Mandatory)][string]$Cuenta, [Parameter(Mandatory)][string]$Derecho)
     $sidCuenta = (Get-Identidad $Cuenta).Translate([Security.Principal.SecurityIdentifier]).Value
+        if (-not $sidCuenta) { throw "No existe la cuenta ${Cuenta}; no se asigna $Derecho" }
     $inf = Join-Path $env:TEMP ("derechos_{0}.inf" -f [guid]::NewGuid())
     $sdb = Join-Path $env:TEMP ("derechos_{0}.sdb" -f [guid]::NewGuid())
     secedit /export /areas USER_RIGHTS /cfg $inf | Out-Null
@@ -48,8 +49,8 @@ function Set-DerechoUsuario {
 }
 
 $cuentas = @(
-    @{ Nombre = $P.CuentaPg;       Descripcion = 'Ejecuta el servicio de PostgreSQL (sin privilegios)'; Derecho = 'SeServiceLogonRight' },
-    @{ Nombre = $P.CuentaMongo;    Descripcion = 'Ejecuta el servicio de MongoDB (sin privilegios)';    Derecho = 'SeServiceLogonRight' },
+    @{ Nombre = $P.CuentaPg;       Descripcion = 'Servicio de PostgreSQL (sin privilegios)'; Derecho = 'SeServiceLogonRight' },
+    @{ Nombre = $P.CuentaMongo;    Descripcion = 'Servicio de MongoDB (sin privilegios)';    Derecho = 'SeServiceLogonRight' },
     @{ Nombre = $P.CuentaRespaldo; Descripcion = 'Ejecuta las tareas programadas de respaldo';          Derecho = 'SeBatchLogonRight' }
 )
 
@@ -60,7 +61,7 @@ foreach ($c in $cuentas) {
     if (-not (Get-LocalUser -Name $c.Nombre -ErrorAction SilentlyContinue)) {
         $clave = Read-Host "  Contraseña para $($c.Nombre) (minimo 16 caracteres)" -AsSecureString
         New-LocalUser -Name $c.Nombre -Password $clave -Description $c.Descripcion `
-            -PasswordNeverExpires -UserMayNotChangePassword -AccountNeverExpires | Out-Null
+            -PasswordNeverExpires -UserMayNotChangePassword -AccountNeverExpires -ErrorAction Stop | Out-Null | Out-Null
         Write-Paso "  creada como usuario estandar" 'OK'
     } else {
         Write-Paso "  ya existia" 'INFO'
