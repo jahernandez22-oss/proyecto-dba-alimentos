@@ -31,7 +31,8 @@ function Set-DerechoUsuario {
     $i = -1
     for ($k = 0; $k -lt $lineas.Count; $k++) { if ($lineas[$k] -match "^$Derecho\s*=") { $i = $k } }
     if ($i -ge 0) {
-        if ($lineas[$i] -match [regex]::Escape("*$sidCuenta")) {
+        $valores = (($lineas[$i] -split '=', 2)[1] -split ',') | ForEach-Object { $_.Trim() }
+        if (($valores -contains "*$sidCuenta") -or ($valores -contains $Cuenta)) {
             Write-Paso "  $Cuenta ya tenia $Derecho" 'INFO'
             Remove-Item $inf -ErrorAction SilentlyContinue
             return
