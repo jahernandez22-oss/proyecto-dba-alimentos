@@ -46,7 +46,8 @@ Remove-Item $inf -ErrorAction SilentlyContinue
 foreach ($c in $P.CuentaPg, $P.CuentaMongo, $P.CuentaRespaldo) {
     try { $sidCuenta = (Get-Identidad $c).Translate([Security.Principal.SecurityIdentifier]).Value } catch { $sidCuenta = 'sin-sid' }
     $linea = $derechos | Where-Object { $_ -match '^SeDenyInteractiveLogonRight' }
-    Revisar 'Windows' "$c sin inicio de sesion interactivo" ([bool]($linea -match [regex]::Escape("*$sidCuenta"))) ''
+    $valores = @(if ($linea) { (($linea -split '=', 2)[1] -split ',') | ForEach-Object { $_.Trim() } })
+    Revisar 'Windows' "$c sin inicio de sesion interactivo" (($valores -contains "*$sidCuenta") -or ($valores -contains $c)) ''
 }
 # Politica de contraseñas y bloqueo de cuentas (las claves de secedit no dependen del idioma)
 $inf2 = Join-Path $env:TEMP 'verif_politica.inf'
