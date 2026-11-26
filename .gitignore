@@ -1,0 +1,25 @@
+# Nada de secretos, llaves, respaldos ni datos en el repositorio
+secretos/
+**/secretos/
+*.key
+*.pem
+*.crt
+*.pfx
+mongo.key
+pgpass*.conf
+mongo_*.yaml
+mongo_mantenimiento.txt
+*.dump
+*.archive
+*.archive.gz
+*.bson
+*.bson.gz
+Respaldos/
+respaldos/
+logs/
+*.log
+
+# Archivos del sistema y del editor
+Thumbs.db
+desktop.ini
+.vscode/
